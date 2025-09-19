@@ -1,28 +1,24 @@
-// app/page.tsx
 "use client"; // Marcar como Client Component
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { signIn } from "next-auth/react";
-import { useScroll, useTransform } from "framer-motion"; // Para efectos de scroll
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Efecto de scroll para el fondo dinámico
   const { scrollYProgress } = useScroll();
   const backgroundColor = useTransform(
     scrollYProgress,
     [0, 1],
-    ["#90ee90", "#228b22"] // Cambia de verde claro a oscuro con el scroll
+    ["#a8e4a0", "#1a5c38"] // Gradiente verde claro a oscuro
   );
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/" }); // Abre la ventana de login de Google
-  };
-
+  // Manejar cambio de header al hacer scroll
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -31,18 +27,45 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Animación para partículas de fondo
+  const particles = Array.from({ length: 20 }).map((_, i) => (
+    <motion.div
+      key={i}
+      className="absolute bg-green-300/30 rounded-full"
+      style={{
+        width: Math.random() * 10 + 5,
+        height: Math.random() * 10 + 5,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+      }}
+      animate={{
+        y: [0, -20, 0],
+        opacity: [0.2, 0.8, 0.2],
+        scale: [1, 1.2, 1],
+      }}
+      transition={{
+        duration: Math.random() * 5 + 5,
+        repeat: Infinity,
+        repeatType: "loop",
+      }}
+    />
+  ));
+
   return (
     <motion.div
-      style={{ backgroundColor }} // Fondo cambia con scroll
-      className="min-h-screen overflow-x-hidden"
+      style={{ backgroundColor }}
+      className="min-h-screen overflow-x-hidden relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
+      transition={{ duration: 1.2 }}
     >
-      {/* Header con navegación y login */}
+      {/* Partículas de fondo */}
+      <div className="fixed inset-0 pointer-events-none">{particles}</div>
+
+      {/* Header */}
       <motion.header
         className={`fixed top-0 left-0 w-full p-4 transition-all duration-300 z-50 ${
-          scrolled ? "bg-green-800 shadow-lg" : "bg-transparent"
+          scrolled ? "bg-green-900/80 backdrop-blur-md shadow-lg" : "bg-transparent"
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -53,110 +76,83 @@ export default function Home() {
             <Image
               src="/logo.png"
               alt="ShoganaiStudio Logo"
-              width={100}
-              height={100}
-              className="rounded-full shadow-lg"
+              width={80}
+              height={80}
+              className="rounded-full shadow-lg border-2 border-green-300"
             />
           </motion.div>
-          <nav className="flex space-x-6">
-            <motion.a
-              href="#hero"
-              className="text-white font-bold hover:text-green-300 transition-colors"
-              whileHover={{ y: -5 }}
-            >
-              Inicio
-            </motion.a>
-            <motion.a
-              href="#features"
-              className="text-white font-bold hover:text-green-300 transition-colors"
-              whileHover={{ y: -5 }}
-            >
-              Características
-            </motion.a>
-            <motion.a
-              href="#services"
-              className="text-white font-bold hover:text-green-300 transition-colors"
-              whileHover={{ y: -5 }}
-            >
-              Servicios
-            </motion.a>
-            <motion.a
-              href="#contact"
-              className="text-white font-bold hover:text-green-300 transition-colors"
-              whileHover={{ y: -5 }}
-            >
-              Contacto
-            </motion.a>
+          <nav className="flex space-x-8">
+            {["Inicio", "Características", "Servicios", "Contacto"].map((item, i) => (
+              <motion.a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-white font-semibold text-lg hover:text-green-300 transition-colors"
+                whileHover={{ y: -5, scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+              >
+                {item}
+              </motion.a>
+            ))}
           </nav>
           <motion.button
             onClick={() => setShowLogin(!showLogin)}
-            className="bg-green-500/50 text-white px-6 py-2 rounded-full shadow-lg hover:bg-green-600/70 transition-all"
-            whileHover={{ scale: 1.1 }}
+            className="bg-green-500/70 text-white px-6 py-2 rounded-full shadow-lg hover:bg-green-600/90 transition-all font-semibold"
+            whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.9 }}
           >
-            Iniciar sesión
+            Iniciar Sesión
           </motion.button>
         </div>
       </motion.header>
 
       {/* Hero Section */}
-      <section id="hero" className="min-h-screen flex items-center justify-center text-center">
+      <section id="inicio" className="min-h-screen flex items-center justify-center text-center relative">
         <motion.div
+          className="container mx-auto z-10"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="container mx-auto"
         >
           <motion.h1
-            className="text-6xl font-extrabold text-white mb-4 drop-shadow-lg"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            className="text-7xl font-extrabold text-white mb-6 drop-shadow-2xl bg-gradient-to-r from-green-300 to-green-600 bg-clip-text text-transparent"
+            animate={{ y: [0, -15, 0], scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 3 }}
           >
-            Bienvenido a ShoganaiStudio
+            ShoganaiStudio
           </motion.h1>
           <motion.p
-            className="text-2xl text-white mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            className="text-2xl text-white/90 mb-10 max-w-2xl mx-auto font-light"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
           >
-            Tu estudio creativo con amor y profesionalidad. Descubre un mundo de posibilidades.
+            Creatividad, pasión y profesionalidad en cada proyecto. ¡Únete a la magia verde!
           </motion.p>
-          <div className="flex justify-center space-x-4">
-            <motion.a
-              href="/informacion"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-green-500/50 text-white px-8 py-3 rounded-full shadow-lg hover:bg-green-600/70 transition-all"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              INFORMACION
-            </motion.a>
-            <motion.a
-              href="/pedidos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-green-500/50 text-white px-8 py-3 rounded-full shadow-lg hover:bg-green-600/70 transition-all"
-              whileHover={{ scale: 1.1, rotate: -5 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              PEDIDOS
-            </motion.a>
-            <motion.button
-              className="bg-green-500/50 text-white px-8 py-3 rounded-full shadow-lg hover:bg-green-600/70 transition-all"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              TIENDA
-            </motion.button>
-            <motion.button
-              className="bg-green-500/50 text-white px-8 py-3 rounded-full shadow-lg hover:bg-green-600/70 transition-all"
-              whileHover={{ scale: 1.1, rotate: -5 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              HOSTING
-            </motion.button>
+          <div className="flex justify-center space-x-6">
+            {[
+              { href: "/informacion", label: "INFORMACION", target: "_blank" },
+              { href: "/pedidos", label: "PEDIDOS", target: "_blank" },
+              { href: "#", label: "TIENDA" },
+              { href: "#", label: "HOSTING" },
+            ].map((btn, i) => (
+              <motion.a
+                key={btn.label}
+                href={btn.href}
+                target={btn.target || "_self"}
+                rel={btn.target ? "noopener noreferrer" : undefined}
+                className="bg-green-500/70 text-white px-8 py-3 rounded-full shadow-xl hover:bg-green-600/90 transition-all font-semibold text-lg"
+                whileHover={{ scale: 1.1, rotate: i % 2 === 0 ? 5 : -5 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.2 }}
+              >
+                {btn.label}
+              </motion.a>
+            ))}
           </div>
         </motion.div>
       </section>
@@ -168,149 +164,132 @@ export default function Home() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-10 right-10 bg-white/80 p-6 rounded-lg shadow-xl z-50"
+            className="fixed bottom-10 right-10 bg-white/90 p-8 rounded-2xl shadow-2xl z-50 max-w-sm"
           >
-            <h2 className="text-xl font-bold mb-4 text-green-800">Inicia sesión</h2>
+            <motion.h2
+              className="text-2xl font-bold mb-6 text-green-800"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Inicia Sesión con Google
+            </motion.h2>
             <motion.button
               onClick={handleGoogleSignIn}
-              className="bg-green-500/50 text-white px-6 py-2 rounded-full shadow-lg hover:bg-green-600/70 transition-all w-full"
-              whileHover={{ scale: 1.05 }}
+              className="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-700 transition-all w-full font-semibold"
+              whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(0, 255, 0, 0.5)" }}
               whileTap={{ scale: 0.95 }}
             >
-              INICIAR SESION CON GOOGLE
+              INICIAR SESIÓN CON GOOGLE
             </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Sección de Características (con cards animadas) */}
-      <section id="features" className="py-20 bg-green-100/20">
+      {/* Sección de Características */}
+      <section id="caracteristicas" className="py-24 bg-green-200/20">
         <div className="container mx-auto text-center">
           <motion.h2
-            className="text-4xl font-bold text-white mb-12"
+            className="text-5xl font-bold text-white mb-16 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            Nuestras Características
+            Lo que nos hace únicos
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              className="bg-white/30 p-6 rounded-lg shadow-lg"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold text-green-800 mb-4">Diseño Creativo</h3>
-              <p className="text-white">Diseños únicos y personalizados con amor.</p>
-            </motion.div>
-            <motion.div
-              className="bg-white/30 p-6 rounded-lg shadow-lg"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold text-green-800 mb-4">Hosting Seguro</h3>
-              <p className="text-white">Hosting confiable y rápido para tu sitio.</p>
-            </motion.div>
-            <motion.div
-              className="bg-white/30 p-6 rounded-lg shadow-lg"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold text-green-800 mb-4">Tienda Integrada</h3>
-              <p className="text-white">Tienda online fácil y atractiva.</p>
-            </motion.div>
-            {/* Añadir más cards para llegar a "muchas cosas" - hasta 10 por ejemplo */}
-            <motion.div
-              className="bg-white/30 p-6 rounded-lg shadow-lg"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold text-green-800 mb-4">Animaciones Fluidas</h3>
-              <p className="text-white">Experiencias interactivas con animaciones suaves.</p>
-            </motion.div>
-            <motion.div
-              className="bg-white/30 p-6 rounded-lg shadow-lg"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold text-green-800 mb-4">Soporte 24/7</h3>
-              <p className="text-white">Asistencia constante con pasión.</p>
-            </motion.div>
-            <motion.div
-              className="bg-white/30 p-6 rounded-lg shadow-lg"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold text-green-800 mb-4">Personalización Total</h3>
-              <p className="text-white">Adapta todo a tus necesidades con amor.</p>
-            </motion.div>
-            {/* Continuar añadiendo hasta 40 si quieres, pero para no alargar, paramos en 6 - puedes agregar más */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+            {[
+              { title: "Diseño Creativo", desc: "Diseños únicos con un toque de magia verde." },
+              { title: "Hosting Ultrarápido", desc: "Servidores confiables para tu éxito." },
+              { title: "Tienda Personalizada", desc: "Crea tu tienda con estilo y facilidad." },
+              { title: "Soporte 24/7", desc: "Siempre aquí con pasión y compromiso." },
+              { title: "Animaciones Suaves", desc: "Experiencias visuales que cautivan." },
+              { title: "SEO Optimizado", desc: "Llega a más clientes con visibilidad." },
+              { title: "Integraciones API", desc: "Conecta tu sitio con cualquier servicio." },
+              { title: "Diseño Responsivo", desc: "Perfecto en cualquier dispositivo." },
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                className="bg-white/20 p-6 rounded-xl shadow-lg hover:bg-green-300/30 transition-all"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="text-2xl font-bold text-green-800 mb-4">{feature.title}</h3>
+                <p className="text-white/90">{feature.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Sección de Servicios */}
-      <section id="services" className="py-20">
+      <section id="servicios" className="py-24 bg-green-800/30">
         <div className="container mx-auto text-center">
           <motion.h2
-            className="text-4xl font-bold text-white mb-12"
+            className="text-5xl font-bold text-white mb-16 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
             Nuestros Servicios
           </motion.h2>
-          <motion.ul className="list-disc list-inside text-white text-xl space-y-4">
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }}>Diseño Web Profesional</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>Hosting y Mantenimiento</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>Tienda Online</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}>Pedidos Personalizados</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>Información Detallada</motion.li>
-            {/* Añadir más elementos para "muchas cosas" */}
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.6 }}>Consultoría Creativa</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.7 }}>Optimización SEO</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.8 }}>Integraciones API</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.9 }}>Diseño Gráfico</motion.li>
-            <motion.li initial={{ x: -50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 1.0 }}>Desarrollo Móvil</motion.li>
-            {/* Puedes agregar hasta 40, pero para el ejemplo, 10 es suficiente */}
-          </motion.ul>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+            {[
+              "Diseño Web Profesional",
+              "Hosting y Mantenimiento",
+              "Tienda Online Integrada",
+              "Pedidos Personalizados",
+              "Consultoría Creativa",
+              "Optimización SEO",
+              "Integraciones API",
+              "Diseño Gráfico",
+              "Desarrollo Móvil",
+              "Soporte Técnico 24/7",
+              "Branding Completo",
+              "Estrategias Digitales",
+              "Campañas Publicitarias",
+              "Gestión de Redes Sociales",
+              "Analítica Web",
+            ].map((service, i) => (
+              <motion.div
+                key={i}
+                className="bg-green-500/20 p-4 rounded-lg shadow-md hover:bg-green-500/40 transition-all"
+                initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <p className="text-white text-lg font-semibold">{service}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Sección de Contacto */}
-      <section id="contact" className="py-20 bg-green-800/50">
+      <section id="contacto" className="py-24 bg-green-900/50">
         <div className="container mx-auto text-center">
           <motion.h2
-            className="text-4xl font-bold text-white mb-12"
+            className="text-5xl font-bold text-white mb-16 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            Contáctanos
+            ¡Contáctanos!
           </motion.h2>
           <motion.p
-            className="text-white text-xl mb-8"
+            className="text-white text-xl mb-10 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            Estamos aquí para ayudarte con pasión y profesionalidad.
+            Estamos listos para llevar tu proyecto al siguiente nivel con amor y profesionalidad.
           </motion.p>
           <motion.button
-            className="bg-green-500/50 text-white px-8 py-3 rounded-full shadow-lg hover:bg-green-600/70 transition-all"
-            whileHover={{ scale: 1.1 }}
+            className="bg-green-600 text-white px-10 py-4 rounded-full shadow-xl hover:bg-green-700 transition-all font-semibold text-lg"
+            whileHover={{ scale: 1.1, boxShadow: "0 0 20px rgba(0, 255, 0, 0.5)" }}
             whileTap={{ scale: 0.9 }}
           >
             Enviar Mensaje
@@ -319,15 +298,28 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-6 text-center text-white bg-green-900">
-        <p>&copy; 2023 ShoganaiStudio. Hecho con ❤️ y profesionalidad.</p>
-        <div className="flex justify-center space-x-4 mt-4">
-          <motion.a href="#" whileHover={{ y: -5 }} className="text-white">Twitter</motion.a>
-          <motion.a href="#" whileHover={{ y: -5 }} className="text-white">Instagram</motion.a>
-          <motion.a href="#" whileHover={{ y: -5 }} className="text-white">LinkedIn</motion.a>
-          {/* Añadir más links sociales */}
-          <motion.a href="#" whileHover={{ y: -5 }} className="text-white">Facebook</motion.a>
-          <motion.a href="#" whileHover={{ y: -5 }} className="text-white">YouTube</motion.a>
+      <footer className="py-8 text-center text-white bg-green-900">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
+          &copy; 2025 ShoganaiStudio. Todos los derechos reservados. Hecho con ❤️ y profesionalidad.
+        </motion.p>
+        <div className="flex justify-center space-x-6 mt-4">
+          {["Twitter", "Instagram", "LinkedIn", "Facebook", "YouTube"].map((social, i) => (
+            <motion.a
+              key={social}
+              href="#"
+              className="text-green-300 hover:text-green-400 transition-colors"
+              whileHover={{ y: -5, scale: 1.2 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              {social}
+            </motion.a>
+          ))}
         </div>
       </footer>
     </motion.div>
